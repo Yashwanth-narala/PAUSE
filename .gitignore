@@ -1,0 +1,9 @@
+__pycache__/\n*.py[cod]\n.venv/\n.env\nnode_modules/\ndist/\n.vscode/\n
+.env
+.env.*
+!.env.example
+.venv/
+__pycache__/
+*.pyc
+node_modules/
+dist/
