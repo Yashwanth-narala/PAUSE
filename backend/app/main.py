@@ -1214,13 +1214,38 @@ def voiceguard_analyze(
             detail="VoiceGuard failed. Check the backend terminal.",
         ) from exc
     finally:
-        # TEMPORARY DEBUG MODE: preserve S3 objects so failures can be inspected.
-        # After VoiceGuard works, restore deletion or configure an S3 lifecycle rule.
-        logger.info(
-            "VoiceGuard DEBUG: preserving S3 objects for inspection. "
-            "uploaded=%s audio_key=%s transcript_output_created=%s transcript_key=%s",
-            uploaded,
-            audio_key,
-            transcript_output_created,
-            transcript_key,
-        )
+        # Clean up temporary S3 objects when safe.
+        # If Transcribe is still running, preserve the input audio so the
+        # transcription job can finish. Configure an S3 lifecycle rule as
+        # an additional safeguard for objects left behind after failures.
+
+        objects_to_delete = []
+
+        if uploaded:
+            objects_to_delete.append(audio_key)
+
+        if transcript_output_created:
+            objects_to_delete.append(transcript_key)
+
+        if objects_to_delete:
+            try:
+                s3.delete_objects(
+                    Bucket=VOICEGUARD_BUCKET,
+                    Delete={
+                        "Objects": [
+                            {"Key": key}
+                            for key in objects_to_delete
+                        ],
+                        "Quiet": True,
+                    },
+                )
+                logger.info(
+                    "VoiceGuard cleanup completed for %d object(s).",
+                    len(objects_to_delete),
+                )
+            except (ClientError, BotoCoreError):
+                logger.exception(
+                    "VoiceGuard cleanup failed. "
+                    "Configure an S3 lifecycle rule to remove abandoned objects."
+                )
+        
