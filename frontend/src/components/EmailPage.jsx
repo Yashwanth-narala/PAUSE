@@ -12,7 +12,7 @@ import {
   ScanSearch,
 } from "lucide-react";
 
-const API = "http://127.0.0.1:8000";
+import { API } from "../config";
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 
 function parseHeaders(rawHeaders) {

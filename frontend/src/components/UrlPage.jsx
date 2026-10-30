@@ -14,7 +14,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-const API = "http://127.0.0.1:8000";
+import { API } from "../config";
 
 const URL_SAMPLES = [
   { label: "HTTPS website", value: "https://example.com/login" },

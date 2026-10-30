@@ -13,8 +13,8 @@ import {
   LockKeyhole,
   RefreshCw,
 } from "lucide-react";
+import { API } from "../config";
 
-const API_BASE = "http://127.0.0.1:8000";
 const ACCEPTED_TYPES = [".pdf", ".txt", ".docx"];
 const MAX_FILE_SIZE = 15 * 1024 * 1024;
 
@@ -95,7 +95,7 @@ export default function DocPage({ onBack }) {
       formData.append("file", file);
 
       // This endpoint expects multipart/form-data with a field named "file".
-      const response = await fetch(`${API_BASE}/api/analyze-document`, {
+      const response = await fetch(`${API}/api/analyze-document`, {
         method: "POST",
         body: formData,
       });
@@ -116,7 +116,7 @@ export default function DocPage({ onBack }) {
     } catch (err) {
       setError(
         err?.message?.includes("Failed to fetch")
-          ? "Cannot connect to the PAUSE backend. Check that FastAPI is running on http://127.0.0.1:8000 and that /api/analyze-document is available."
+          ? "Cannot connect to the PAUSE backend. Check that FastAPI is running and that /api/analyze-document is available."
           : err.message || "Unable to analyze this document. Please try again."
       );
     } finally {
