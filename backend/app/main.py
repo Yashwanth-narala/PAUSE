@@ -31,14 +31,21 @@ if _tesseract_cmd:
     pytesseract.pytesseract.tesseract_cmd = _tesseract_cmd
 MAX_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_IMAGE_PIXELS = 25_000_000
+frontend_origin = os.getenv(
+    "FRONTEND_ORIGIN",
+    "http://localhost:5173"
+).rstrip("/")
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        os.getenv("FRONTEND_ORIGIN", "http://localhost:5173")
+        frontend_origin,
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
     ],
     allow_credentials=False,
-    allow_methods=["GET", "POST"],
-    allow_headers=["Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 DEMO = os.getenv("PAUSE_DEMO_MODE", "true").strip().lower() == "true"
 MAX_CHARS = int(os.getenv("MAX_MESSAGE_CHARS", "12000"))
