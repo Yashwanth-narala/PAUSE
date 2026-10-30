@@ -1,9 +1,20 @@
-__pycache__/\n*.py[cod]\n.venv/\n.env\nnode_modules/\ndist/\n.vscode/\n
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
-.venv/
-__pycache__/
-*.pyc
+
+# Frontend
 node_modules/
 dist/
+
+# Editors
+.vscode/
+
+# Runtime data and transcripts
+backend/transcript.json
