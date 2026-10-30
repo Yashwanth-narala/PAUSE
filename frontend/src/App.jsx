@@ -12,7 +12,7 @@ import ScreenshotPage from "./components/ScreenshotPage";
 import EmailPage from "./components/EmailPage";
 import UrlPage from "./components/UrlPage";
 import DocPage from "./components/Doc";
-
+import VoiceGuardPage from "./components/VoiceGuardPage";
 export default function App() {
   const [page, setPage] = useState("home");
   const [selectedType, setSelectedType] = useState("message");
@@ -86,6 +86,9 @@ export default function App() {
 
         {page === "analysis" && selectedType === "document" && (
           <DocPage onBack={handleBack} />
+        )}
+        {page === "analysis" && selectedType === "voice" && (
+           <VoiceGuardPage onBack={handleBack} />
         )}
 
         <footer className="site-footer">
