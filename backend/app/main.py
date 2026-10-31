@@ -128,29 +128,34 @@ VOICEGUARD_SUPPORTED_FORMATS = {
 
 }
 
-# Dedicated Bedrock configuration. Isolated from default AWS credentials used by VoiceGuard.
-
+# Dedicated Bedrock configuration. Bedrock can use a separate AWS account from
+# VoiceGuard. Local development may use BEDROCK_AWS_PROFILE; Render should use
+# BEDROCK_AWS_ACCESS_KEY_ID / BEDROCK_AWS_SECRET_ACCESS_KEY.
 BEDROCK_AWS_PROFILE = os.getenv("BEDROCK_AWS_PROFILE", "").strip()
-
+BEDROCK_AWS_ACCESS_KEY_ID = os.getenv("BEDROCK_AWS_ACCESS_KEY_ID", "").strip()
+BEDROCK_AWS_SECRET_ACCESS_KEY = os.getenv("BEDROCK_AWS_SECRET_ACCESS_KEY", "").strip()
+BEDROCK_AWS_SESSION_TOKEN = os.getenv("BEDROCK_AWS_SESSION_TOKEN", "").strip()
 BEDROCK_AWS_REGION = os.getenv("BEDROCK_AWS_REGION", "ap-southeast-2").strip()
-
 BEDROCK_MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0").strip()
 
-
 if BEDROCK_AWS_PROFILE:
-
+    # Local Windows development: use the friend's named AWS CLI profile.
     bedrock_session = boto3.Session(
-
         profile_name=BEDROCK_AWS_PROFILE,
-
         region_name=BEDROCK_AWS_REGION,
-
     )
-
+elif BEDROCK_AWS_ACCESS_KEY_ID and BEDROCK_AWS_SECRET_ACCESS_KEY:
+    # Production: use the friend's dedicated Bedrock credentials, isolated
+    # from the default credentials used by VoiceGuard's S3 and Transcribe clients.
+    bedrock_session = boto3.Session(
+        aws_access_key_id=BEDROCK_AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=BEDROCK_AWS_SECRET_ACCESS_KEY,
+        aws_session_token=BEDROCK_AWS_SESSION_TOKEN or None,
+        region_name=BEDROCK_AWS_REGION,
+    )
 else:
-
+    # Fallback to the standard AWS credential chain (useful for AWS-hosted roles).
     bedrock_session = boto3.Session(region_name=BEDROCK_AWS_REGION)
-
 
 bedrock_client = bedrock_session.client("bedrock-runtime")
 
