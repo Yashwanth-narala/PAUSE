@@ -29,9 +29,37 @@ function AnalysisPage({ onBack, initialText = "" }) {
       setError(`${err.message || "Unable to connect to PAUSE."} Check that the backend is running on port 8000. If Bedrock is still suspended, the analysis request will fail until access is restored.`);
     } finally { setLoading(false); }
   }
-
+  
+  
   const assessmentText = result?.assessment?.toLowerCase() || "";
-  const status = assessmentText.includes("multiple") || assessmentText.includes("high-risk") || assessmentText.includes("high risk") ? "danger" : assessmentText.includes("verification") || assessmentText.includes("review") ? "warning" : "calm";
+
+  const hasHighSignal = (result?.signals || []).some(
+  signal => (signal.severity || "").toLowerCase() === "high"
+);
+
+  const hasMediumSignal = (result?.signals || []).some(
+  signal => (signal.severity || "").toLowerCase() === "medium"
+);
+
+  const status =
+  assessmentText.includes("high-risk") ||
+  assessmentText.includes("high risk") ||
+  assessmentText.includes("multiple high-risk") ||
+  hasHighSignal
+    ? "danger"
+    : assessmentText.includes("verification") ||
+      assessmentText.includes("review") ||
+      hasMediumSignal
+        ? "warning"
+        : "calm";
+
+  const assessmentLabel =
+  status === "danger"
+    ? "HIGH RISK — Verification required"
+    : status === "warning"
+      ? "Verification recommended"
+      : "No significant concern detected";
+
 
   return <main className="analysis-page">
     <div className="analysis-page-heading"><button className="back-link" onClick={onBack}><ArrowLeft size={16} /> Change input type</button><div><span className="kicker">INPUT TYPE / MESSAGE</span><h1>Let's look at it together.</h1><p>Paste the message below. PAUSE will organize its observations, evidence, and suggested verification steps.</p></div></div>
@@ -48,7 +76,7 @@ function AnalysisPage({ onBack, initialText = "" }) {
         {!result && !loading && <div className="card empty"><div className="empty-icon"><Eye size={27} /></div><span className="kicker">YOUR REVIEW SPACE</span><h2>Your clarity starts here.</h2><p>Submit a message to see its context, observable signals, verification checklist, and safer next steps.</p><div className="steps"><span>01 Context</span><span>02 Signals</span><span>03 Verify</span><span>04 Act safely</span></div></div>}
         {loading && <div className="card empty"><LoaderCircle className="spin big" /><span className="kicker">PAUSE IS WORKING</span><h2>Reviewing the interaction</h2><p>Waiting for the analysis workflow to return its observations. This can take a little time.</p></div>}
         {result && <>
-          <div className={`assessment ${status}`}><div className="assessment-icon">{status === "danger" ? <AlertTriangle /> : status === "warning" ? <ScanSearch /> : <CheckCircle2 />}</div><div><div className="kicker">PAUSE ASSESSMENT</div><h2>{result.assessment || "Assessment returned"}</h2><p>{result.confidence_note || "Review the evidence and independently verify important claims."}</p></div></div>
+          <div className={`assessment ${status}`}><div className="assessment-icon">{status === "danger" ? <AlertTriangle /> : status === "warning" ? <ScanSearch /> : <CheckCircle2 />}</div><div><div className="kicker">PAUSE ASSESSMENT</div><h2>{assessmentLabel}</h2><p>{result.confidence_note || "Review the evidence and independently verify important claims."}</p></div></div>
           <Card title="Interaction context"><b className="context">{result.context?.interaction_type || (typeof result.context === "string" ? result.context : "Context not provided")}</b>{result.context?.requested_action && <p className="body"><b>Requested action:</b> {result.context.requested_action}</p>}{result.context?.claimed_actor && <p className="body"><b>Claimed actor:</b> {result.context.claimed_actor}</p>}</Card>
           <Card title="Signals that deserve attention">{(result.signals || []).length ? result.signals.map((signal, i) => <div className="signal" key={i}><span className={`severity ${(signal.severity || "low").toLowerCase()}`}>{signal.severity || "review"}</span><div><b>{signal.name || "Observed signal"}</b><p className="quote">{signal.exact_evidence || signal.evidence || "No exact quote provided."}</p><p className="body">{signal.explanation || signal.why_it_matters || "Review this observation in context."}</p></div></div>) : <p className="body">No signals were returned. This does not guarantee that the content is safe.</p>}</Card>
           <Card title="Verification checklist">{(result.verification || []).length ? result.verification.map((item, i) => <div className="verify" key={i}><ScanSearch /><div><b>{item.claim || "Claim to verify"}</b><small>{item.status || "Independent verification recommended"}</small><p>{item.next_step || "Check using an official channel you find independently."}</p></div></div>) : <p className="body">No verification steps were returned. Independently check important claims using official channels.</p>}</Card>

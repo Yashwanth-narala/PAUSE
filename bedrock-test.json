@@ -1,0 +1,17 @@
+{
+  "modelId": "amazon.nova-lite-v1:0",
+  "messages": [
+    {
+      "role": "user",
+      "content": [
+        {
+          "text": "Reply exactly: PAUSE Bedrock connection successful"
+        }
+      ]
+    }
+  ],
+  "inferenceConfig": {
+    "maxTokens": 100,
+    "temperature": 0.2
+  }
+}
